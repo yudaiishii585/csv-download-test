@@ -37,6 +37,7 @@ header.appbar .brand { font-size: 16px; font-weight: 600; letter-spacing: .02em;
 header.appbar .brand small { font-weight: 400; opacity: .75; margin-left: 10px; font-size: 12px; }
 header.appbar a { color: #cfe0f3; text-decoration: none; font-size: 13px; }
 header.appbar a:hover { text-decoration: underline; }
+header.appbar .note { color: #cfe0f3; font-size: 12px; opacity: .8; }
 
 main { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
 
