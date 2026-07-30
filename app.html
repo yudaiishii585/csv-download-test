@@ -225,7 +225,11 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+      // ここで URL.revokeObjectURL() は呼ばない。
+      // 自動化ツールから連続でダウンロードさせたとき、保存が終わる前に
+      // URLを破棄してしまい取りこぼす場合があるため。
+      // 1件あたり数KBなので、ページを開いている間そのままにしておいて問題ない。
     } finally {
       csvBtn.disabled = false;
     }
