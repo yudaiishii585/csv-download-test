@@ -1,0 +1,188 @@
+/* ひなた製菓 販売管理システム（研修用）— 業務システム風の地味な見た目 */
+
+:root {
+  --navy: #1f3a5f;
+  --navy-dark: #162c48;
+  --blue: #2f6fb3;
+  --line: #d4dae2;
+  --bg: #eef1f5;
+  --text: #23303f;
+  --muted: #6b7887;
+  --warn-bg: #fff8e1;
+  --warn-line: #e6c860;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── ヘッダー ── */
+header.appbar {
+  background: var(--navy);
+  color: #fff;
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header.appbar .brand { font-size: 16px; font-weight: 600; letter-spacing: .02em; }
+header.appbar .brand small { font-weight: 400; opacity: .75; margin-left: 10px; font-size: 12px; }
+header.appbar a { color: #cfe0f3; text-decoration: none; font-size: 13px; }
+header.appbar a:hover { text-decoration: underline; }
+
+main { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+
+h1.page-title {
+  font-size: 18px;
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--navy);
+}
+p.page-desc { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+
+/* ── パネル ── */
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.panel > h2 {
+  font-size: 14px;
+  margin: 0;
+  padding: 10px 16px;
+  background: #f6f8fa;
+  border-bottom: 1px solid var(--line);
+  border-radius: 4px 4px 0 0;
+}
+.panel > .body { padding: 16px; }
+
+/* ── フォーム ── */
+.fields { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.field label .req { color: #c0392b; margin-left: 3px; }
+
+select, input[type="text"], input[type="password"] {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid #b9c2cd;
+  border-radius: 3px;
+  background: #fff;
+  min-width: 170px;
+  color: var(--text);
+}
+select:focus, input:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: 1px solid var(--navy);
+  border-radius: 3px;
+  background: var(--navy);
+  color: #fff;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--navy-dark); }
+button.secondary { background: #fff; color: var(--navy); }
+button.secondary:hover:not(:disabled) { background: #eef3f9; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── 仕様の注意書き（研修の仕掛け） ── */
+.notice {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  border-left: 4px solid var(--warn-line);
+  padding: 10px 14px;
+  font-size: 13px;
+  margin: 0 0 16px;
+  border-radius: 3px;
+}
+.notice strong { font-weight: 700; }
+
+/* ── 結果テーブル ── */
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.summary { font-size: 13px; color: var(--muted); }
+.summary b { color: var(--text); font-size: 15px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead th {
+  background: #f6f8fa;
+  border-bottom: 2px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 600;
+}
+tbody td { border-bottom: 1px solid #edf0f3; padding: 7px 10px; }
+tbody tr:hover { background: #f9fbfd; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow-x: auto; }
+
+.state {
+  padding: 36px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ── ログイン画面 ── */
+body.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--navy);
+}
+.login-card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 32px 34px;
+  width: 360px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .28);
+}
+.login-card h1 { font-size: 17px; margin: 0 0 2px; }
+.login-card .sub { color: var(--muted); font-size: 12px; margin: 0 0 22px; }
+.login-card .field { margin-bottom: 14px; }
+.login-card .field, .login-card select, .login-card input { width: 100%; }
+.login-card button { width: 100%; margin-top: 8px; padding: 10px; }
+.login-hint {
+  margin-top: 18px;
+  padding: 10px 12px;
+  background: #f4f7fa;
+  border: 1px dashed #b9c2cd;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.login-hint code { color: var(--text); font-weight: 700; }
+.error {
+  background: #fdecea;
+  border: 1px solid #f0b4ae;
+  color: #a3251a;
+  padding: 8px 12px;
+  border-radius: 3px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}

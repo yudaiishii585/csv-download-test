@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>売上データ抽出 | ひなた製菓 販売管理システム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="appbar">
+  <div class="brand">ひなた製菓 販売管理システム <small>FY2025</small></div>
+  <a href="#" id="logout">ログアウト</a>
+</header>
+
+<main>
+  <h1 class="page-title">売上データ抽出</h1>
+  <p class="page-desc">条件を指定して検索し、結果をCSVで出力できます。</p>
+
+  <p class="notice">
+    <strong>【システム仕様】</strong>
+    対象月とカテゴリは <strong>1つずつ</strong> しか指定できません。
+    複数月・複数カテゴリをまとめて出力することはできないため、
+    必要な分だけ検索と出力を繰り返してください。
+  </p>
+
+  <section class="panel">
+    <h2>検索条件</h2>
+    <div class="body">
+      <div class="fields">
+        <div class="field">
+          <label for="month">対象月<span class="req">*</span></label>
+          <select id="month" name="month">
+            <option value="2025-04">2025-04</option>
+            <option value="2025-05">2025-05</option>
+            <option value="2025-06">2025-06</option>
+            <option value="2025-07">2025-07</option>
+            <option value="2025-08">2025-08</option>
+            <option value="2025-09">2025-09</option>
+            <option value="2025-10">2025-10</option>
+            <option value="2025-11">2025-11</option>
+            <option value="2025-12">2025-12</option>
+            <option value="2026-01">2026-01</option>
+            <option value="2026-02">2026-02</option>
+            <option value="2026-03">2026-03</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="category">カテゴリ<span class="req">*</span></label>
+          <select id="category" name="category">
+            <option value="焼き菓子">焼き菓子</option>
+            <option value="生菓子">生菓子</option>
+            <option value="ギフト">ギフト</option>
+            <option value="季節限定">季節限定</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="store">店舗</label>
+          <select id="store" name="store">
+            <option value="すべて">すべて</option>
+            <option value="本店">本店</option>
+            <option value="駅前店">駅前店</option>
+            <option value="催事">催事</option>
+            <option value="オンライン">オンライン</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <button type="button" id="search-btn">検索</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>検索結果</h2>
+    <div class="body">
+      <div class="result-head">
+        <div class="summary" id="summary">条件を指定して「検索」を押してください。</div>
+        <button type="button" id="csv-btn" class="secondary" disabled>CSVダウンロード</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>店舗</th>
+              <th>カテゴリ</th>
+              <th>商品名</th>
+              <th class="num">数量</th>
+              <th class="num">単価</th>
+              <th class="num">売上金額</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="state" id="state">検索結果はまだありません。</div>
+    </div>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  // ログインしていなければログイン画面へ戻す
+  if (sessionStorage.getItem('hinata_session') !== 'ok') {
+    location.replace('index.html');
+    return;
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const monthEl = $('month');
+  const categoryEl = $('category');
+  const storeEl = $('store');
+  const searchBtn = $('search-btn');
+  const csvBtn = $('csv-btn');
+  const tbody = $('tbody');
+  const summary = $('summary');
+  const state = $('state');
+
+  // 実際の業務システムらしく、少しだけ待たせる
+  const DELAY_SEARCH_MS = 600;
+  const DELAY_CSV_MS = 400;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // 直前に検索した条件。CSV出力はこの条件に対して行う。
+  let lastQuery = null;
+
+  const yen = (n) => '¥' + n.toLocaleString('ja-JP');
+
+  function currentQuery() {
+    return {
+      month: monthEl.value,
+      category: categoryEl.value,
+      store: storeEl.value,
+    };
+  }
+
+  // 条件を変えたら、前回の検索結果に対するCSV出力は無効に戻す
+  [monthEl, categoryEl, storeEl].forEach((el) => {
+    el.addEventListener('change', () => {
+      csvBtn.disabled = true;
+      lastQuery = null;
+      tbody.innerHTML = '';
+      summary.textContent = '条件が変更されました。もう一度「検索」を押してください。';
+      state.textContent = '検索結果はまだありません。';
+      state.style.display = '';
+    });
+  });
+
+  document.getElementById('logout').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('hinata_session');
+    location.href = 'index.html';
+  });
+
+  searchBtn.addEventListener('click', async () => {
+    const q = currentQuery();
+    searchBtn.disabled = true;
+    csvBtn.disabled = true;
+    tbody.innerHTML = '';
+    summary.textContent = '';
+    state.textContent = '読み込み中...';
+    state.style.display = '';
+
+    try {
+      await sleep(DELAY_SEARCH_MS);
+
+      const rows = SalesData.buildRows(q.month, q.category, q.store);
+      const total = rows.reduce((s, r) => s + r.amount, 0);
+
+      tbody.innerHTML = rows.map((r) => `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.store}</td>
+          <td>${r.category}</td>
+          <td>${r.product}</td>
+          <td class="num">${r.quantity.toLocaleString('ja-JP')}</td>
+          <td class="num">${yen(r.unitPrice)}</td>
+          <td class="num">${yen(r.amount)}</td>
+        </tr>`).join('');
+
+      summary.innerHTML =
+        `${q.month} ／ ${q.category} ／ ${q.store} ： `
+        + `<b>${rows.length}</b> 件 ／ 合計 <b>${yen(total)}</b>`;
+
+      if (rows.length > 0) {
+        state.style.display = 'none';
+        csvBtn.disabled = false;
+        lastQuery = q;
+      } else {
+        state.textContent = '該当するデータがありません。';
+      }
+    } catch (e) {
+      state.textContent = String(e.message || e);
+      summary.textContent = '';
+    } finally {
+      searchBtn.disabled = false;
+    }
+  });
+
+  csvBtn.addEventListener('click', async () => {
+    if (!lastQuery) return;
+    csvBtn.disabled = true;
+
+    try {
+      await sleep(DELAY_CSV_MS);
+
+      const rows = SalesData.buildRows(lastQuery.month, lastQuery.category, lastQuery.store);
+      const csv = SalesData.toCsv(rows);
+      const filename = SalesData.csvFilename(lastQuery.month, lastQuery.category);
+
+      // ブラウザ上でCSVファイルを組み立ててダウンロードさせる
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } finally {
+      csvBtn.disabled = false;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

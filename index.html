@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ログイン | ひなた製菓 販売管理システム</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+
+<form class="login-card" id="login-form">
+  <h1>ひなた製菓 販売管理システム</h1>
+  <p class="sub">社内システムにログインしてください</p>
+
+  <div id="error-box"></div>
+
+  <div class="field">
+    <label for="userid">ユーザーID<span class="req">*</span></label>
+    <input type="text" id="userid" name="userid" autocomplete="username" required>
+  </div>
+
+  <div class="field">
+    <label for="password">パスワード<span class="req">*</span></label>
+    <input type="password" id="password" name="password" autocomplete="current-password" required>
+  </div>
+
+  <button type="submit">ログイン</button>
+
+  <p class="login-hint">
+    研修用のダミーサイトです。実在の会社・データではありません。<br>
+    ID <code>demo</code> ／ パスワード <code>demo</code> でログインできます。
+  </p>
+</form>
+
+<script>
+(function () {
+  const USER_ID = 'demo';
+  const PASSWORD = 'demo';
+
+  document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const id = document.getElementById('userid').value;
+    const pw = document.getElementById('password').value;
+
+    if (id === USER_ID && pw === PASSWORD) {
+      sessionStorage.setItem('hinata_session', 'ok');
+      location.href = 'app.html';
+    } else {
+      document.getElementById('error-box').innerHTML =
+        '<p class="error" role="alert">ユーザーIDまたはパスワードが違います。</p>';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
